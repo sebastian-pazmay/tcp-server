@@ -1,69 +1,48 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 )
 
-// TODO:
-// include read addr as argument
-// use localhost by default
-//const addr = "10.0.0.6:9090"
-const addr = "localhost:9090"
-
+var netAddress string
+var netPort string
 var length = 0
-
-// TODO:
-// times is not required now, remove it
-var times = 0
 
 func CheckError(err error) {
 	if err != nil {
-		// TODO:
-		// Fix error catching
-		//fmt.Println("Error: " , err)
+		panic(err)
 	}
 }
 
 func main() {
-	// TODO:
-	// Fix messages
-	fmt.Println("This is the ultra new TCP server!")
-	listener, err := net.Listen("tcp", addr)
-	fmt.Println("I am listening to TCP on ", addr)
+	flag.StringVar(&netAddress, "a", "localhost", "Specify IP address. Default is localhost")
+	flag.StringVar(&netPort, "p", "9090", "Specify network port. Default is 9090")
+	flag.Parse()
+	netSocket := netAddress + ":" + netPort
+	tcpListener, err := net.Listen("tcp", netSocket)
 	CheckError(err)
-	defer listener.Close()
+	fmt.Println("I am listening to TCP on: ", netSocket)
 	for {
-		// Listen for an incoming connection.
-		conn, err := listener.Accept()
+		tcpConnection, err := tcpListener.Accept()
 		CheckError(err)
-		fmt.Println("I accepted a TCP connection from ", conn.RemoteAddr())
-		// Handle connections in a new goroutine.
-		go handleRequest(conn)
+		fmt.Println("TCP connection accepted from: ", tcpConnection.RemoteAddr())
+		go handleTCPRequest(tcpConnection)
 	}
 }
 
-// Handles incoming requests.
-func handleRequest(conn net.Conn) {
-	for {
-		buf := make([]byte, 10485760)
-		// TODO:
-		// Search what it is being done here
-		n, err := conn.Read(buf)
-		if n != 0 {
-			//fmt.Println("\n Received ", string(buf[0:n]), " from ", conn.RemoteAddr())
-			CheckError(err)
-			// TODO:
-			// Remove times
-			times = times + 1
-			length = n + length
-			// log the bytes written
-			fmt.Printf("READ %d bytes\n", length)
-			// TODO:
-			// Remove times
-			fmt.Printf("TIMES %d times\n", times)
-			conn.Write([]byte("TCP Server response!"))
-			fmt.Println("Server also responded!")
-		}
+func handleTCPRequest(connection net.Conn) {
+	rcvBuffer := make([]byte, 104857600)
+	data, err := connection.Read(rcvBuffer)
+	CheckError(err)
+	if data != 0 {
+		length = data + length
+		fmt.Printf("READ %d bytes\n", length)
+		_, err := connection.Write([]byte("TCP Server response"))
+		CheckError(err)
+		fmt.Println("Server responded!")
 	}
+	err = connection.Close()
+	CheckError(err)
 }
