@@ -9,7 +9,7 @@ import (
 var (
 	netAddress string
 	netPort string
-	length = 0
+	rcvDataLength = 0
 )
 
 func CheckError(err error) {
@@ -37,11 +37,11 @@ func main() {
 
 func handleTCPRequest(connection net.Conn) {
 	rcvBuffer := make([]byte, 104857600)
-	data, err := connection.Read(rcvBuffer)
+	rcvData, err := connection.Read(rcvBuffer)
 	CheckError(err)
-	if data != 0 {
-		length = data + length
-		fmt.Printf("READ %d bytes\n", length)
+	if rcvData != 0 {
+		rcvDataLength = rcvData + rcvDataLength
+		fmt.Printf("Received %v KB\n", float64(rcvDataLength/1024.0))
 		_, err := connection.Write([]byte("TCP Server response"))
 		CheckError(err)
 		fmt.Println("Server responded!")
