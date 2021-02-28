@@ -22,6 +22,7 @@ func main() {
 	flag.StringVar(&netAddress, "a", "localhost", "Specify IP address. Default is localhost")
 	flag.StringVar(&netPort, "p", "9090", "Specify network port. Default is 9090")
 	flag.Parse()
+	fmt.Println("Starting TCP Server")
 	netSocket := netAddress + ":" + netPort
 	tcpListener, err := net.Listen("tcp", netSocket)
 	CheckError(err)
