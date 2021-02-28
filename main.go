@@ -6,9 +6,11 @@ import (
 	"net"
 )
 
-var netAddress string
-var netPort string
-var length = 0
+var (
+	netAddress string
+	netPort string
+	length = 0
+)
 
 func CheckError(err error) {
 	if err != nil {
